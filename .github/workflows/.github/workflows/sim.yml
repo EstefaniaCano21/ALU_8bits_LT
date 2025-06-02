@@ -1,0 +1,28 @@
+name: Verilog Simulation
+on: [push, pull_request]  # Se ejecuta al hacer push o PR
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog gtkwave
+
+      - name: Run Simulation
+        run: |
+          iverilog -o sim.out src/tt_um_alu.sv src/alu_8bit.sv test/alu_tb.sv
+          vvp sim.out
+          
+      - name: Upload Waveform
+        if: always()  # Sube resultados aunque falle
+        uses: actions/upload-artifact@v3
+        with:
+          name: waveform
+          path: |
+            dump.vcd
+            sim.out
